@@ -1,0 +1,209 @@
+﻿@model DataModelTemplateModel
+@{
+    var dbName = this.Model.DataModel.Name;
+    dbName = StringUtility.ToUnderscoreCase(dbName);
+}@functions
+{
+    ISet<String> GetKeyPropNames(EntityKey key)
+    {
+        var set = new HashSet<String>();
+        if (key == null || key.Properties == null || key.Properties.Count < 1)
+        {
+            return set;
+        }
+        foreach (var keyProperty in key.Properties)
+        {
+            set.Add(keyProperty.Name);
+        }
+        return set;
+    }
+
+    string GetKeyObjectParams(EntityKey key)
+    {
+        if (key == null || key.Properties == null || key.Properties.Count < 1)
+        {
+            return "";
+        }
+        var list = new List<string>();
+        foreach (var keyProperty in key.Properties)
+        {
+            list.Add(StringUtility.ToCamelCase(keyProperty.Name));
+        }
+        return String.Join(", ", list);
+    }
+
+    string GetKeySqlWhereExpr(EntityKey key)
+    {
+        if (key == null || key.Properties == null || key.Properties.Count < 1)
+        {
+            return "";
+        }
+        var list = new List<string>();
+        foreach (var keyProperty in key.Properties)
+        {
+            list.Add(String.Format("[{0}] = @{0}", StringUtility.ToPascalCase(keyProperty.Name)));
+        }
+        return String.Join(" AND ", list);
+    }
+
+    bool IsRowVersionName(string name)
+    {
+        if(String.IsNullOrEmpty(name))
+        {
+            return false;
+        }
+        name = StringUtility.ToCamelCase(name).ToLowerInvariant();
+        return name.Equals("rowversion") || name.Equals("rowver");
+    }
+
+    bool IsUpdateTimeName(string name)
+    {
+        if(String.IsNullOrEmpty(name))
+        {
+            return false;
+        }
+        name = StringUtility.ToCamelCase(name).ToLowerInvariant();
+        return name.Equals("updatedat") || name.Equals("updatedon") || name.Equals("updatetime")
+            || name.Equals("modifiedat") || name.Equals("modifiedon") || name.Equals("modifytime");
+    }
+
+}@helper DataAccessMethods(EntitySchema entity)
+{
+    var codeHelper = new CSharpCodeHelper(this);
+    var entityKey = entity.Key;
+    var insertReturnType = "void";
+    if(entityKey != null)
+    {
+        if(!entityKey.IsComposite)
+        {
+            insertReturnType = codeHelper.DataTypeString(entityKey.Properties.First().Property);
+        }
+    }
+    var constEntityName = StringUtility.ToUnderscoreCase(entity.Name).ToUpperInvariant();
+    var keyArgs = codeHelper.KeyArgumentsString(entityKey);
+    var fieldList = new List<String>();
+    var fieldListNoId = new List<String>();
+    var insertValueList = new List<String>();
+    var updateFieldList = new List<String>();
+    var hasId = false;
+    var idType = String.Empty;
+    var idPropName = String.Empty;
+    var hasRowVer = false;
+    var hasUpdateTime = false;
+    var keyPropNames = this.GetKeyPropNames(entityKey);
+    var rowVerPropName = String.Empty;
+    foreach(var prop in entity.Properties)
+    {
+        fieldList.Add(String.Format("[{0}]", prop.Name));
+        if(prop.IsIdentity)
+        {
+            hasId = true;
+            idType = codeHelper.DataTypeString(prop);
+            idPropName = prop.Name;
+        }
+        else
+        {
+            fieldListNoId.Add(String.Format("[{0}]", prop.Name));
+            insertValueList.Add("@" + prop.Name);
+        }
+        if(this.IsRowVersionName(prop.Name)) {
+            hasRowVer = true;
+            rowVerPropName = prop.Name;
+            updateFieldList.Add(String.Format("[{0}] = [{0}]+1", prop.Name));
+        } else if(this.IsUpdateTimeName(prop.Name)) {
+            updateFieldList.Add(String.Format("[{0}] = DATETIME('NOW','LOCALTIME')", prop.Name));
+        } else if(!keyPropNames.Contains(prop.Name)) {
+            updateFieldList.Add(String.Format("[{0}] = @{0}", prop.Name));
+        }
+    }
+    var fieldListString = String.Join(",", fieldList);
+    var fieldsNoIdString = String.Join(",", fieldListNoId);
+    var insertValues = String.Join(",", insertValueList);
+    var updateFieldsString = String.Join(",", updateFieldList);
+    var keyObjectParams = this.GetKeyObjectParams(entityKey);
+    var keySqlWhereExpr = this.GetKeySqlWhereExpr(entityKey);
+    var updateWhereExpr = keySqlWhereExpr;
+    if(hasRowVer) {
+        updateWhereExpr += String.Format(" AND [{0}] = @{0}", rowVerPropName);
+    }
+<text>
+        #region Entity:@(entity.Name)
+
+        protected const string SQL_@(constEntityName)_FIELDS = "@(fieldListString)";
+        protected const string SQL_@(constEntityName)_SELECT = "SELECT " + SQL_@(constEntityName)_FIELDS + " FROM [@(entity.Name)];";
+        protected const string SQL_@(constEntityName)_SELECT_LIMIT = "SELECT " + SQL_@(constEntityName)_FIELDS + " FROM [@(entity.Name)] LIMIT {0},{1};";
+        protected const string SQL_@(constEntityName)_SELECT_SINGLE = "SELECT " + SQL_@(constEntityName)_FIELDS + " FROM [@(entity.Name)] WHERE @(keySqlWhereExpr);";
+    @if(hasId) {
+        <text>protected const string SQL_@(constEntityName)_INSERT = "INSERT INTO [@(entity.Name)](@(fieldsNoIdString)) VALUES(@(insertValues));SELECT LAST_INSERT_ROWID();";</text>
+    } else {
+        <text>protected const string SQL_@(constEntityName)_INSERT = "INSERT INTO [@(entity.Name)](@(fieldsNoIdString)) VALUES(@(insertValues));";</text>
+    }        
+        protected const string SQL_@(constEntityName)_UPDATE = "UPDATE [@(entity.Name)] SET @Raw(updateFieldsString) WHERE @Raw(updateWhereExpr);";
+        protected const string SQL_@(constEntityName)_DELETE = "DELETE FROM [@(entity.Name)] WHERE @(keySqlWhereExpr);";
+
+        public IList<@(entity.Name)> List@(StringUtility.ToPlural(entity.Name))()
+        {
+            var cnn = this.GetConnection();
+            return cnn.Query<@(entity.Name)>(SQL_@(constEntityName)_SELECT).ToArray();
+        }
+
+        public IList<@(entity.Name)> List@(StringUtility.ToPlural(entity.Name))(int offset, int count)
+        {
+            var cnn = this.GetConnection();
+            var sql = String.Format(SQL_@(constEntityName)_SELECT_LIMIT, offset, count);
+            return cnn.Query<@(entity.Name)>(sql).ToArray();
+        }
+
+        public @(entity.Name) Find@(entity.Name)(@(keyArgs))
+        {
+            var cnn = this.GetConnection();
+            return cnn.QueryFirst<@(entity.Name)>(SQL_@(constEntityName)_SELECT_SINGLE, new { @(keyObjectParams) });
+        }
+
+        public void Insert@(entity.Name)(@(entity.Name) item)
+        {
+            var cnn = this.GetConnection();
+        @if(hasId) {
+            <text>var id = cnn.ExecuteScalar<@(idType)>(SQL_@(constEntityName)_INSERT, item);
+            item.@(idPropName) = id;</text>
+        } else {
+            <text>cnn.Execute(SQL_@(constEntityName)_INSERT, item);</text>
+        }
+        }
+
+        public bool Update@(entity.Name)(@(entity.Name) item)
+        {
+            var cnn = this.GetConnection();
+            var rows = cnn.Execute(SQL_@(constEntityName)_UPDATE, item);
+            return rows == 1;
+        }
+
+        public bool Remove@(entity.Name)(@(keyArgs))
+        {
+            var cnn = this.GetConnection();
+            var rows = cnn.Execute(SQL_@(constEntityName)_DELETE, new { @(keyObjectParams) });
+            return rows == 1;
+        }
+
+        #endregion Entity:@(entity.Name)</text>
+}using System;
+using System.Collections.Generic;
+using System.Linq;
+using Dapper;
+using @Model.GetParameter("Namespace.DataAcessAbstraction");
+using @Model.GetParameter("Namespace.Entity");
+
+namespace @Model.GetParameter("Namespace.DataAcess.SQLite")
+{
+    public partial class SQLiteDataAccessService : SQLiteDataAccessBase, IDataAccessService
+    {
+        public SQLiteDataAccessService(string connectionString) : base(connectionString)
+        {
+        }
+        @foreach(var entity in this.Model.DataModel.Entities)
+        {
+            @DataAccessMethods(entity);
+        }
+    }
+}
+

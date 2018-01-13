@@ -1,11 +1,8 @@
-﻿@model DataModelTemplateModel
-@{
-    var dbName = this.Model.DataModel.Name;
-    dbName = StringUtility.ToUnderscoreCase(dbName);
-}
-@helper TableScript(EntitySchema entity)
-{
+﻿@model EntityTemplateModel
+@{ 
     var sql = new MySqlCodeHelper(this);
+    var entity = Model.Entity;
+    var props = Model.Entity.Properties;
     var seed = 0;
     var engine = Model.GetParameter("MySQL.Engine") ?? "InnoDB";
     var comment = entity.Comment;
@@ -17,8 +14,8 @@
             comment = entity.Name ?? String.Empty;
         }
     }
-
-<text>-- #table: @Raw(comment.Replace("\r\n", " "))
+    
+}-- #table: @Raw(comment.Replace("\r\n", " "))
 CREATE TABLE IF NOT EXISTS `@StringUtility.ToUnderscoreCase(entity.Name)`
 (
     @foreach (var prop in entity.Properties)
@@ -62,23 +59,3 @@ CREATE TABLE IF NOT EXISTS `@StringUtility.ToUnderscoreCase(entity.Name)`
 
     PRIMARY KEY (@sql.PrimaryKeyMembers(entity))
 ) ENGINE=@Raw(engine) CHARSET=UTF8MB4@{ if(seed > 1) { @Raw(" AUTO_INCREMENT=" + seed) } } COMMENT='@Raw(comment.Replace("\r\n", " "))';
-
-</text>
-}
-@helper DropTableScript(EntitySchema entity)
-{
-<text>DROP TABLE IF EXISTS `@StringUtility.ToUnderscoreCase(entity.Name)`;</text>
-}
-use `@(dbName)`;
-
-
-@foreach(var entity in this.Model.DataModel.Entities)
-{
-    @DropTableScript(entity);
-}
-
-
-@foreach(var entity in this.Model.DataModel.Entities)
-{
-    @TableScript(entity);
-}

@@ -2,8 +2,7 @@
 @{
     var dbName = this.Model.DataModel.Name;
     dbName = StringUtility.ToUnderscoreCase(dbName);
-}
-@helper DataAccessMethods(EntitySchema entity)
+}@helper DataAccessMethods(EntitySchema entity)
 {
     var codeHelper = new CSharpCodeHelper(this);
     var entityKey = entity.Key;
@@ -36,7 +35,7 @@
 }using System;
 using System.Collections.Generic;
 using System.Data;
-using @Model.GetParameter("Namespace.Entity")
+using @Model.GetParameter("Namespace.Entity");
 
 namespace @Model.GetParameter("Namespace.DataAcessAbstraction")
 {

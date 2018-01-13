@@ -1,0 +1,183 @@
+﻿@model DataModelTemplateModel
+@{
+    var dbName = this.Model.DataModel.Name;
+    dbName = StringUtility.ToUnderscoreCase(dbName);
+}
+@functions {
+
+    object Order(SortDirection order)
+    {
+        switch (order)
+        {
+            case SortDirection.Ascending:
+                return this.Raw("ASC");
+            case SortDirection.Descending:
+                return this.Raw("DESC");
+            default:
+                return this.Raw("ASC");
+        }
+    }
+
+    object Order(KeyProperty property)
+    {
+        if (property == null)
+        {
+            throw new ArgumentNullException("property");
+        }
+        return this.Order(property.Order);
+    }
+
+    string BuildPrimaryKeyMember(KeyProperty property)
+    {
+        if (property == null)
+        {
+            throw new ArgumentNullException("property");
+        }
+        var name = StringUtility.ToPascalCase(property.Name);
+        if (property.Order == SortDirection.Ascending)
+        {
+            return String.Format("[{0}]", name);
+        }
+        return String.Format("[{0}] {1}", name, this.Order(property.Order));
+    }
+
+    string PrimaryKeyMembers(EntitySchema entity)
+    {
+        if (entity == null)
+        {
+            throw new ArgumentNullException("entity");
+        }
+        var arr = entity.Key.Properties.Select(p => this.BuildPrimaryKeyMember(p));
+        return String.Join(", ", arr);
+    }
+
+    string DataType(PropertySchema property)
+    {
+        if (property == null)
+        {
+            throw new ArgumentNullException("property");
+        }
+        switch (property.Type)
+        {
+            case PropertyDataType.None:
+                return "TEXT";
+            case PropertyDataType.Boolean:
+                return "INTEGER";
+            case PropertyDataType.Byte:
+                return "INTEGER";
+            case PropertyDataType.Int16:
+                return "INTEGER";
+            case PropertyDataType.Int32:
+                return "INTEGER";
+            case PropertyDataType.Int64:
+                return "INTEGER";
+            case PropertyDataType.Decimal:
+                return "NUMERIC";
+            case PropertyDataType.Currency:
+                return "NUMERIC";
+            case PropertyDataType.Single:
+                return "REAL";
+            case PropertyDataType.Double:
+                return "REAL";
+            case PropertyDataType.Enum:
+                return "INTEGER";
+            case PropertyDataType.DateTime:
+                return "TEXT";
+            case PropertyDataType.Guid:
+                return "TEXT";
+            case PropertyDataType.TimeStamp:
+                return "TEXT";
+            case PropertyDataType.String:
+                return "TEXT";
+            case PropertyDataType.Binary:
+                return "TEXT";
+            default:
+                return "TEXT";
+        }
+    }
+
+}
+@helper TableScript(EntitySchema entity)
+{
+var engine = Model.GetParameter("MySQL.Engine") ?? "InnoDB";
+var isAutoIncr = false;
+var comment = entity.Comment;
+if(String.IsNullOrWhiteSpace(comment))
+{
+    comment = entity.DisplayName;
+    if(String.IsNullOrWhiteSpace(comment))
+    {
+        comment = entity.Name ?? String.Empty;
+    }
+}
+var num = 1;
+var count = entity.Properties.Count;
+
+<text>-- #table: @Raw(comment.Replace("\r\n", " "))
+CREATE TABLE IF NOT EXISTS [@StringUtility.ToPascalCase(entity.Name)]
+(
+    @foreach (var prop in entity.Properties)
+	{
+        var isLast = num >= count;
+        var columnComment = (prop.Comment ?? prop.DisplayName ?? prop.Name ?? string.Empty).Replace("\r\n", " ");
+        @RawFormat("    [{0}]", StringUtility.ToPascalCase(prop.Name))
+        @Raw(" " + this.DataType(prop))
+        if (prop.Nullable)
+        {
+            @Raw(" NULL")
+        }
+        else
+        {
+            @Raw(" NOT NULL")
+        }
+        if(prop.IsUnique)
+        {
+            @Raw(" UNIQUE")
+        }
+        if(prop.IsIdentity)
+        {
+            isAutoIncr = true;
+            @Raw(" PRIMARY KEY AUTOINCREMENT")
+        }
+        else if(prop.HasDefault)
+        {
+            if((prop.Type == PropertyDataType.DateTime || prop.Type == PropertyDataType.TimeStamp) && prop.DefaultValue == "CURRENT_TIMESTAMP")
+            {
+                @RawFormat(" DEFAULT {0}", prop.DefaultValue)
+            }
+            else
+            {
+                @RawFormat(" DEFAULT '{0}'", prop.DefaultValue)
+            }
+        }
+        if (isLast && isAutoIncr)
+        {
+            @RawFormat(" -- COMMENT '{0}'", columnComment)
+        }
+        else
+        {
+            @RawFormat(", -- COMMENT '{0}'\r\n", columnComment)
+        }
+        num++;
+    }
+    @if (!isAutoIncr) {
+        @RawFormat("PRIMARY KEY({0})", this.PrimaryKeyMembers(entity))
+    }
+
+);
+</text>
+}
+@helper DropTableScript(EntitySchema entity)
+{
+<text>-- DROP TABLE IF EXISTS [@StringUtility.ToPascalCase(entity.Name)];</text>
+}
+@foreach(var entity in this.Model.DataModel.Entities)
+{
+    @DropTableScript(entity);
+}
+
+
+@foreach(var entity in this.Model.DataModel.Entities)
+{
+    @TableScript(entity);
+}
