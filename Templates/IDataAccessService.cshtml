@@ -1,0 +1,58 @@
+﻿@model DataModelTemplateModel
+@{
+    var dbName = this.Model.DataModel.Name;
+    dbName = StringUtility.ToUnderscoreCase(dbName);
+}
+@helper DataAccessMethods(EntitySchema entity)
+{
+    var codeHelper = new CSharpCodeHelper(this);
+    var entityKey = entity.Key;
+    var insertReturnType = "void";
+    if(entityKey != null)
+    {
+        if(!entityKey.IsComposite)
+        {
+            insertReturnType = codeHelper.DataTypeString(entityKey.Properties.First().Property);
+        }
+    }
+    var keyArgs = codeHelper.KeyArgumentsString(entityKey);
+
+<text>
+        #region Entity:@(entity.Name)
+
+        IList<@(entity.Name)> List@(StringUtility.ToPlural(entity.Name))();
+
+        IList<@(entity.Name)> List@(StringUtility.ToPlural(entity.Name))(int offset, int limit);
+
+        @(entity.Name) Find@(entity.Name)(@(keyArgs));
+
+        void Insert@(entity.Name)(@(entity.Name) item);
+
+        bool Update@(entity.Name)(@(entity.Name) item);
+
+        bool Remove@(entity.Name)(@(keyArgs));
+
+        #endregion @(entity.Name)</text>
+}using System;
+using System.Collections.Generic;
+using System.Data;
+using @Model.GetParameter("Namespace.Entity")
+
+namespace @Model.GetParameter("Namespace.DataAcessAbstraction")
+{
+    public interface IDataAccessService : IDisposable
+    {
+        void Begin(IsolationLevel level);
+
+        void Commit();
+
+        void Rollback();
+
+        void Initialize();
+        @foreach(var entity in this.Model.DataModel.Entities)
+        {
+            @DataAccessMethods(entity);
+        }
+    }
+}
+

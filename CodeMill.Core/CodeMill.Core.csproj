@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{975AA3D8-0A35-4A1B-9F8E-D489F43558EA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CodeMill.Core</RootNamespace>
+    <AssemblyName>CodeMill.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CodeMillException.cs" />
+    <Compile Include="Common\ConsoleTextOutput.cs" />
+    <Compile Include="Common\EnumerableExtensions.cs" />
+    <Compile Include="Common\PathUtility.cs" />
+    <Compile Include="Common\ITextOutput.cs" />
+    <Compile Include="Common\MD5Utility.cs" />
+    <Compile Include="Common\StringUtility.cs" />
+    <Compile Include="Common\TextOutputExtensions.cs" />
+    <Compile Include="Common\Xml\XmlExtensions.cs" />
+    <Compile Include="Engine\IEngine.cs" />
+    <Compile Include="Model\DataModel.cs" />
+    <Compile Include="Model\EntityRelation.cs" />
+    <Compile Include="Model\EntityKey.cs" />
+    <Compile Include="Model\EntitySchema.cs" />
+    <Compile Include="Model\EnumField.cs" />
+    <Compile Include="Model\EnumSchema.cs" />
+    <Compile Include="Model\Enums\AutoValueType.cs" />
+    <Compile Include="Model\Enums\EnumValueType.cs" />
+    <Compile Include="Model\Enums\PropertyDataType.cs" />
+    <Compile Include="Model\Enums\SortDirection.cs" />
+    <Compile Include="Model\INamedMap.cs" />
+    <Compile Include="Model\KeyProperty.cs" />
+    <Compile Include="Model\NamedMap.cs" />
+    <Compile Include="Model\PropertySchema.cs" />
+    <Compile Include="Model\ProjectSchema.cs" />
+    <Compile Include="Model\TemplateEntry.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Xml\DataModelWriter.cs" />
+    <Compile Include="Xml\EntitySchemaReader.cs" />
+    <Compile Include="Xml\EntitySchemaWriter.cs" />
+    <Compile Include="Xml\EnumSchemaReader.cs" />
+    <Compile Include="Xml\EnumSchemaWriter.cs" />
+    <Compile Include="Xml\MapWriter.cs" />
+    <Compile Include="Xml\MapReader.cs" />
+    <Compile Include="Xml\DataModelReader.cs" />
+    <Compile Include="Xml\ProjectSchemaReader.cs" />
+    <Compile Include="Xml\ProjectSchemaWriter.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

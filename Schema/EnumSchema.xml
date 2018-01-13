@@ -1,0 +1,13 @@
+﻿<Enum Name="UserType" Type="Int" Display="UserType" StorageType="Int" StorageName="EnumName">
+    <Fields>
+        <Field Name="Normal" Value="0" />
+        <Field Name="Administrator" Value="1" Display="Administrator" StorageName="admin" />
+    </Fields>
+    <Comments>
+        <Field Name="Normal">Normal User</Field>
+    </Comments>
+    <Comment>UserType</Comment>
+</Enum>
+<!--
+Type: [Int,Int16,Int32,Int64,Byte] Default value is int32
+-->

@@ -1,0 +1,61 @@
+﻿@model EntityTemplateModel
+@{ 
+    var sql = new MySqlCodeHelper(this);
+    var entity = Model.Entity;
+    var props = Model.Entity.Properties;
+    var seed = 0;
+    var engine = Model.GetParameter("MySQL.Engine") ?? "InnoDB";
+    var comment = entity.Comment;
+    if(String.IsNullOrWhiteSpace(comment))
+    {
+        comment = entity.DisplayName;
+        if(String.IsNullOrWhiteSpace(comment))
+        {
+            comment = entity.Name ?? String.Empty;
+        }
+    }
+    
+}-- #table: @Raw(comment.Replace("\r\n", " "))
+CREATE TABLE IF NOT EXISTS `@StringUtility.ToUnderscoreCase(entity.Name)`
+(
+    @foreach (var prop in entity.Properties)
+	{
+        @RawFormat("    `{0}`", StringUtility.ToUnderscoreCase(prop.Name))
+        @Raw(" " + sql.DataType(prop))
+        if (prop.IsUnsigned)
+        {
+            @Raw(" UNSIGNED")
+        }
+        if (prop.Nullable)
+        {
+            @Raw(" NULL")
+        }
+        else
+        {
+            @Raw(" NOT NULL")
+        }
+        if(prop.IsUnique)
+        {
+            @Raw(" UNIQUE")
+        }
+        if(prop.IsIdentity)
+        {
+            seed = prop.Seed;
+            @Raw(" AUTO_INCREMENT")
+        }
+        else if(prop.HasDefault)
+        {
+            if((prop.Type == PropertyDataType.DateTime || prop.Type == PropertyDataType.TimeStamp) && prop.DefaultValue == "CURRENT_TIMESTAMP")
+            {
+                @RawFormat(" DEFAULT {0}", prop.DefaultValue)
+            }
+            else
+            {
+                @RawFormat(" DEFAULT '{0}'", prop.DefaultValue)
+            }            
+        }
+        @RawFormat(" COMMENT '{0}',\r\n", (prop.Comment ?? prop.DisplayName ?? prop.Name ?? string.Empty).Replace("\r\n", " "))
+    }
+
+    PRIMARY KEY (@sql.PrimaryKeyMembers(entity))
+) ENGINE=@Raw(engine) CHARSET=UTF8MB4@{ if(seed > 1) { @Raw(" AUTO_INCREMENT=" + seed) } } COMMENT='@Raw(comment.Replace("\r\n", " "))';

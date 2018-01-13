@@ -1,0 +1,138 @@
+﻿@model EntityTemplateModel
+@{ 
+    var cs = new CSharpCodeHelper(this);
+    var entity = Model.Entity;
+    var props = Model.Entity.Properties;
+    var count = props.Count;
+    var project = Model.DataModel;
+        
+}using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Xml.Serialization;
+
+namespace @Model.GetParameter("Namespace.Entity")
+{
+    /// <summary>
+    /// Entity : @entity.Name @entity.Comment
+    /// </summary>
+    [Serializable]
+    public partial class @entity.Name : ICloneable
+    {
+        #region Constructor
+
+        /// <summary>
+        /// @entity.Name
+        /// </summary>
+        public @(entity.Name)()
+        {
+            @foreach (var prop in entity.Properties)
+			{
+                if(!prop.Nullable)
+                {
+                    @RawLine(3, "this.{0} = {1};", prop.Name, cs.DefaultValue(prop))
+                }
+            }
+@foreach (var ent in project.GetOneToManyEntities(entity))
+{
+    @RawLine(3, "this.{1} = new ObservableCollection<{0}>();", ent.Name, ent.PluralName);
+}
+@foreach (var ent in project.GetManyToManyEntities(entity))
+{
+    @RawLine(3, "this.{1} = new ObservableCollection<{0}>();", ent.Name, ent.PluralName);
+}
+        }
+
+        #endregion
+
+        #region Value Properties
+        
+        @foreach (var prop in entity.Properties)
+		{
+            @RawLine(2, "/// <summary>")
+            @RawLine(2, "/// {0}", prop.Comment)
+            @RawLine(2, "/// </summary>")
+            @RawLine(2, "public {1} {0} {{ get; set; }}", prop.Name, cs.DataType(prop))
+            @RawLine(2, "")
+        }
+        
+        #endregion
+
+        #region Properties
+        
+        
+        
+        #endregion        
+        
+        #region Navigation Properties
+
+@foreach (var relation in entity.Relations)
+{
+    @RawLine(2, "[XmlIgnore]")
+    @RawLine(2, "public virtual {0} {0} {{ get; set; }}", relation.RelatedEntityName)
+    @RawLine(2, "")
+}
+@foreach (var ent in project.GetOneToOneEntities(entity))
+{
+    @RawLine(2, "[XmlIgnore]")
+    @RawLine(2, "public virtual {0} {0} {{ get; set; }}", ent.Name)
+    @RawLine(2, "")
+}
+@foreach (var ent in project.GetOneToManyEntities(entity))
+{
+    @RawLine(2, "[XmlIgnore]")
+    @RawLine(2, "public virtual ICollection<{0}> {1} {{ get; set; }}", ent.Name, ent.PluralName)
+    @RawLine(2, "")
+}
+@foreach (var ent in project.GetManyToManyEntities(entity))
+{
+    @RawLine(2, "[XmlIgnore]")
+    @RawLine(2, "public virtual ICollection<{0}> {1} {{ get; set; }}", ent.Name, ent.PluralName)
+    @RawLine(2, "")
+}
+        #endregion
+
+        #region Methods
+        
+        
+        
+        #endregion
+
+        #region Factory Methods
+        
+        public static @(entity.Name) CreateNew()
+        {
+            var entity = new @(entity.Name)()
+            {
+			@foreach (var prop in entity.Properties)
+            {
+                @RawLine(4, "{0} = {1},", prop.Name, cs.DefaultValue(prop))
+            }
+            };
+            return entity;
+        }
+        
+        #endregion
+
+        #region Interface: ICloneable
+        
+        public object Clone()
+        {
+            var entity = new @(entity.Name)()
+            {
+            @foreach (var prop in entity.Properties)
+            {
+                @RawLine(4, "{0} = this.{0},", prop.Name)
+            }
+            };
+            return entity;
+        }
+
+        object ICloneable.Clone()
+        {
+            return this.Clone();
+        }
+        
+        #endregion
+    }
+}

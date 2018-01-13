@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="CleanUp">
+	<Target Name="CleanUp">
+		<CreateItem Include=".\**\*.csproj">
+			<Output ItemName="CSProjects" TaskParameter="Include" />
+		</CreateItem>
+		<CreateItem Include=".\**\StyleCop.Cache">
+			<Output ItemName="StyleCopFiles" TaskParameter="Include" />
+		</CreateItem>
+		<RemoveDir Directories="%(CSProjects.RecursiveDir)obj;%(CSProjects.RecursiveDir)bin" />
+		<RemoveDir Directories="TestResults" />
+		<Delete Files="%(Files.Identity)" ContinueOnError="true" />
+		<Delete Files="%(StyleCopFiles.Identity)" ContinueOnError="true" />
+	</Target>
+</Project>

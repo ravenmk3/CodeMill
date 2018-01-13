@@ -1,0 +1,31 @@
+﻿<Project Name="MyProject">
+    <Options
+        MapDirectory="Maps"
+        TemplateDirectory="Templates"        
+        OutputDirectory="C:\Output" 
+    />
+    <Parameters>
+        <Item Name="Company">My Company</Item>
+        <Item Name="Author">Anders Cui</Item>
+    </Parameters>
+    <Maps>
+        <Item Name="Map1" />
+    </Maps>
+    <Namespaces>
+        <Item>System</Item>
+        <Item>System.Linq</Item>
+        <Item>System.Collections</Item>
+    </Namespaces>
+    <EnumTemplates>
+        <Item Name="Enum" Output="Enums\{0}.cs" />
+    </EnumTemplates>
+    <EntityTemplates>
+        <Item Name="Entity" Output="Entities\{0}.cs" />
+        <Item Name="Mapping" Output="Mappings\{0}Mapping.cs" />
+        <Item Name="DDL" AllowKeyOnly="True" Output="Tables\{0}.sql" />
+    </EntityTemplates>
+    <DataModelTemplates>
+        <Item Name="ApiController" Output="ApiController.cs" />
+    </DataModelTemplates>
+    <Description>Project Description</Description>
+</Project>

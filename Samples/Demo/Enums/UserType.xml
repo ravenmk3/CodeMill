@@ -1,0 +1,10 @@
+﻿<Enum Name="UserType" Type="Int" Display="UserType" StorageType="int" StorageName="EnumName">
+    <Fields>
+        <Field Name="Normal" Value="0" />
+        <Field Name="Administrator" Value="1" Display="Administrator" StorageName="admin" />
+    </Fields>
+    <Comments>
+      <Field Name="Normal">Normal User</Field>
+    </Comments>
+    <Comment>User Type</Comment>
+</Enum>

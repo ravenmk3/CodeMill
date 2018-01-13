@@ -1,0 +1,25 @@
+﻿<Entity Name="User" Plural="Users" Display="User" StorageName="tb_user">
+    <Properties>
+        <Property Name="UserId" Type="Int" AutoValue="Identity" Seed="1" Increment="1" />
+        <Property Name="UserName" Type="String" Size="20" Unique="True" Display="UserName" />
+        <Property Name="UserType" Type="Enum" EnumName="UserType" StorageName="user_type" />
+        <Property Name="Balance" Type="Money" Precision="38" Scale="2" Default="0" />
+        <Property Name="Email" Type="String" Size="256" Nullable="True" StorageType="varchar" />
+    </Properties>
+    <Key Name="PrimaryKeyName">
+        <Property Name="UserId" Order="Ascending" />
+    </Key>
+    <UniqueKeys>
+        <Key Name="UniqueKeyName">
+            <Property Name="UserName" Order="Descending" />
+        </Key>
+    </UniqueKeys>
+    <Relations>
+        <Relation Property="GroupId" RelatedEntity="UserGroup" RelatedProperty="GroupId" />
+    </Relations>
+    <Comments>
+        <Property Name="UserId">User Identity</Property>
+        <Property Name="Email">Email Address</Property>
+    </Comments>
+    <Comment>UserEntity</Comment>
+</Entity>

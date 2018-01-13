@@ -1,0 +1,64 @@
+﻿<Entity Name="User" Plural="Users" Display="User" StorageName="tb_user">
+    <Properties>
+        <Property Name="UserId" Type="Int" AutoValue="Identity" Seed="1" Increment="1" />
+        <Property Name="UserName" Type="String" Size="20" Unique="True" Display="UserName" />
+        <Property Name="UserType" Type="Enum" EnumName="UserType" StorageName="user_type" />
+        <Property Name="Balance" Type="Money" Precision="38" Scale="2" Default="0" />
+        <Property Name="Email" Type="String" Size="256" Nullable="True" StorageType="varchar" />
+    </Properties>
+    <Key Name="PrimaryKeyName">
+        <Property Name="UserId" Order="Ascending|Descending" />
+    </Key>
+    <UniqueKeys>
+        <Key Name="UniqueKeyName">
+            <Property Name="UserName" Order="Ascending|Descending" />
+        </Key>
+    </UniqueKeys>
+    <Relations>
+        <Relation Property="GroupId" RelatedEntity="UserGroup" RelatedProperty="GroupId" />
+    </Relations>
+    <Comments>
+        <Property Name="UserId">User Identity</Property>
+        <Property Name="Email">Email Address</Property>
+    </Comments>
+    <Comment>UserEntity</Comment>
+</Entity>
+<!--
+
+[Attributes]
+Name: specify the name of property.
+Type: specify the datatype of property.
+Nullable: specify the property can be null , default value is false.
+AutoValue: [None, Identity, Guid, Computed], default value is None.
+Seed: identity seed , default value is 1.
+Increment: identity increment, default value is 1.
+Unique: specify the value is unique, default value is false.
+Size: max length of data, default value is 0, 0 indicate length is max or not set.
+FixedSize: specify the value is fixed length, default value is false.
+EnumName: specify the enum type, default value is null.
+Precision & Scale : specify the precision & scale of decimal, default value is 0.
+Unsigned : specify if the number is unsigned of this property.
+Unicode: specify the encoding of data, default value is true.
+Default: specify the default value of property, default value is null.
+Display: specify the display name of property.
+StorageType: specify the datatype of storage media.
+StorageName: specify the property name of storage media.
+
+[DataTypes]
+Boolean|Bit
+Byte|TinyInt
+DateTime
+Decimal|Numeric
+Enum
+Money|Currency
+Double
+Single|Float
+Guid|Uuid|UniqueIdentifier
+Int16|SmallInt|ShortInt
+Int32|Int
+Int64|BigInt|LongInt
+String
+TimeStamp
+Binary
+
+-->

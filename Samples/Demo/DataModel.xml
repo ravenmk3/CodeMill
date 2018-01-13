@@ -1,0 +1,9 @@
+﻿<DataModel Name="MyDataModel">
+    <Enums Directory="Enums">
+        <Item Name="UserType" />
+    </Enums>
+    <Entities Directory="Entities">
+        <Item Name="User" />
+    </Entities>
+    <Description>DataModel Description</Description>
+</DataModel>
