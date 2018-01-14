@@ -157,7 +157,7 @@
         public @(entity.Name) Find@(entity.Name)(@(keyArgs))
         {
             var cnn = this.GetConnection();
-            return cnn.QueryFirst<@(entity.Name)>(SQL_@(constEntityName)_SELECT_SINGLE, new { @(keyObjectParams) });
+            return cnn.QueryFirstOrDefault<@(entity.Name)>(SQL_@(constEntityName)_SELECT_SINGLE, new { @(keyObjectParams) });
         }
 
         public void Insert@(entity.Name)(@(entity.Name) item)
