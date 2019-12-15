@@ -19,13 +19,13 @@
     <EnumTemplates>
         <Item Name="Enum" Output="Enums\{0}.cs" />
     </EnumTemplates>
-    <!--<EntityTemplates>
+    <EntityTemplates>
         <Item Name="Entity" Output="Entities\{0}.cs" />
         <Item Name="Mapping" Output="Mappings\{0}Mapping.cs" />
         <Item Name="DDL" AllowKeyOnly="True" Output="Tables\{0}.sql" />
-    </EntityTemplates>-->
-    <!--<DataModelTemplates>
+    </EntityTemplates>
+    <DataModelTemplates>
         <Item Name="ApiController" Output="ApiController.cs" />
-    </DataModelTemplates>-->
+    </DataModelTemplates>
     <Description>Project Description</Description>
 </Project>
